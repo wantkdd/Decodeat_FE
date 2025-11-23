@@ -2,19 +2,47 @@ import type { ReactNode } from "react";
 import Modal from "./Modal";
 import { CheckCircle2, XCircle, AlertCircle, Info } from "lucide-react";
 
+/**
+ * 메시지 모달 버튼 인터페이스
+ */
 interface MessageModalButton {
+  /** 버튼 텍스트 */
   label: string;
+  /** 버튼 클릭 핸들러 */
   onClick: () => void;
+  /** 버튼 스타일 변형 */
   variant?: "primary" | "secondary" | "danger";
 }
 
+/**
+ * 메시지 모달 컴포넌트의 Props
+ *
+ * @example
+ * ```tsx
+ * <MessageModal
+ *   isOpen={isOpen}
+ *   onClose={handleClose}
+ *   title="알림"
+ *   message="작업이 완료되었습니다."
+ *   type="success"
+ *   buttons={[{ label: "확인", onClick: handleClose, variant: "primary" }]}
+ * />
+ * ```
+ */
 interface MessageModalProps {
+  /** 모달 표시 여부 */
   isOpen: boolean;
+  /** 모달 닫기 핸들러 */
   onClose: () => void;
+  /** 모달 제목 (선택사항) */
   title?: string;
+  /** 메시지 내용 */
   message: string | ReactNode;
+  /** 메시지 타입 (아이콘 및 색상 결정) */
   type?: "success" | "error" | "warning" | "info";
+  /** 커스텀 버튼 배열 */
   buttons?: MessageModalButton[];
+  /** 커스텀 아이콘 (선택사항, type이 있으면 무시됨) */
   icon?: ReactNode;
 }
 

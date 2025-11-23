@@ -1,7 +1,16 @@
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "../store/useAuthStore";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+/**
+ * API 에러 로깅 헬퍼 함수
+ */
+const logError = (message: string, error: unknown) => {
+  if (import.meta.env.MODE === "development") {
+    console.error(`[API Error] ${message}:`, error);
+  }
+};
 
 export const API = axios.create({
   baseURL: BASE_URL,
@@ -11,12 +20,24 @@ export const API = axios.create({
   withCredentials: false, // Bearer 헤더 방식 사용
 });
 
-// 토큰 갱신 중복 방지를 위한 플래그
-let isRefreshing = false;
-let failedQueue: Array<{
+/**
+ * 토큰 갱신 대기열 아이템 타입
+ */
+interface QueueItem {
   resolve: (value?: unknown) => void;
   reject: (reason?: unknown) => void;
-}> = [];
+}
+
+/**
+ * 확장된 Axios 요청 설정 (재시도 플래그 포함)
+ */
+interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
+
+// 토큰 갱신 중복 방지를 위한 플래그
+let isRefreshing = false;
+let failedQueue: QueueItem[] = [];
 
 const processQueue = (error: unknown) => {
   failedQueue.forEach(({ resolve, reject }) => {
@@ -71,8 +92,20 @@ API.interceptors.response.use(
   (response) => {
     return response;
   },
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: AxiosError) => {
+    const originalRequest = error.config as ExtendedAxiosRequestConfig;
+
+    // 에러 로깅
+    if (error.response) {
+      logError(
+        `HTTP ${error.response.status} - ${error.config?.url}`,
+        error.response.data,
+      );
+    } else if (error.request) {
+      logError("네트워크 에러 - 응답 없음", error.message);
+    } else {
+      logError("요청 설정 에러", error.message);
+    }
 
     // 로그인 페이지에서는 토큰 갱신 시도하지 않음
     if (window.location.pathname === "/login") {
