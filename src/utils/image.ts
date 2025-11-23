@@ -1,4 +1,19 @@
-// 이미지 압축 및 리사이징 함수
+/**
+ * 이미지를 압축하고 리사이징하여 최적화된 JPEG 파일로 변환합니다.
+ *
+ * @param file - 압축할 원본 이미지 파일
+ * @param maxWidth - 최대 너비 (기본값: 1920px)
+ * @param maxHeight - 최대 높이 (기본값: 1920px)
+ * @param quality - JPEG 압축 품질 0-1 사이 (기본값: 0.8)
+ * @returns 압축 및 리사이징된 JPEG 파일
+ *
+ * @example
+ * ```ts
+ * const originalFile = new File([blob], 'photo.png');
+ * const compressedFile = await compressAndResizeImage(originalFile, 1920, 1920, 0.8);
+ * console.log(`압축 전: ${originalFile.size}, 압축 후: ${compressedFile.size}`);
+ * ```
+ */
 export async function compressAndResizeImage(
   file: File,
   maxWidth: number = 1920,
@@ -70,6 +85,18 @@ export async function compressAndResizeImage(
   });
 }
 
+/**
+ * 이미지 파일을 PNG 형식으로 변환합니다.
+ *
+ * @param file - 변환할 원본 이미지 파일
+ * @returns PNG 형식으로 변환된 파일
+ *
+ * @example
+ * ```ts
+ * const jpegFile = new File([blob], 'photo.jpg');
+ * const pngFile = await convertToPng(jpegFile);
+ * ```
+ */
 export async function convertToPng(file: File): Promise<File> {
   return new Promise((resolve, reject) => {
     const img = new Image();

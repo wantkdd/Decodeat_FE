@@ -1,15 +1,34 @@
+import { memo } from "react";
 import leftIcon from "../../assets/icon/ic_Left_28.svg";
 import leftIconDisabled from "../../assets/icon/ic_Left_disabled_28.svg";
 import rightIcon from "../../assets/icon/ic_Right_28.svg";
 import rightIconDisabled from "../../assets/icon/ic_Right_disabled_28.svg";
 
+/**
+ * 페이지네이션 컴포넌트의 Props
+ *
+ * @example
+ * ```tsx
+ * <Pagination
+ *   currentPage={1}
+ *   totalPages={10}
+ *   onPageChange={(page) => setCurrentPage(page)}
+ * />
+ * ```
+ */
 interface PaginationProps {
+  /** 현재 페이지 번호 (1부터 시작) */
   currentPage: number;
+  /** 전체 페이지 수 */
   totalPages: number;
+  /** 페이지 변경 시 호출되는 콜백 함수 */
   onPageChange: (page: number) => void;
 }
 
-const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) => {
+/**
+ * 페이지네이션 컴포넌트 (React.memo로 최적화)
+ */
+const Pagination = memo(({ currentPage, totalPages, onPageChange }: PaginationProps) => {
   // 페이지 이동 시 1 ~ totalPages 범위로 클램프
   const goTo = (p: number) => {
     const clamped = Math.min(Math.max(1, p), Math.max(1, totalPages || 1));
@@ -75,6 +94,8 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) 
       </button>
     </div>
   );
-};
+});
+
+Pagination.displayName = "Pagination";
 
 export default Pagination;
