@@ -1,52 +1,26 @@
-import { useEffect, useState, useCallback, type FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import { useNavigate } from "react-router-dom";
 import UploadSlot from "../components/enroll/UploadSlot";
 import { useEnroll } from "../hooks/useEnroll";
 import { useMessageModal } from "../hooks/useMessageModal";
 import MessageModal from "../components/ui/MessageModal";
 import { useAuthStore } from "../store/useAuthStore";
+import { useLoginRequired } from "../hooks/useLoginRequired";
 import type { EnrollFormData } from "../types/enroll";
 
 const EnrollPage: FC = () => {
   const navigate = useNavigate();
-  const {
-    modalState,
-    showSuccess,
-    showError,
-    showWarning,
-    hideModal: originalHideModal,
-  } = useMessageModal();
+  const { modalState, showSuccess, showError, hideModal } = useMessageModal();
   const { showLoginModal, setShowLoginModal } = useAuthStore();
+  const { requireLogin } = useLoginRequired();
 
-  // 커스텀 hideModal - 전역 로그인 모달 상태도 함께 초기화
-  const hideModal = useCallback(() => {
-    setShowLoginModal(false);
-    originalHideModal();
-  }, [setShowLoginModal, originalHideModal]);
-
-  // 전역 로그인 모달 상태 감지
+  // 전역 로그인 모달 상태 감지 (axios 인터셉터에서 설정됨)
   useEffect(() => {
     if (showLoginModal) {
-      setShowLoginModal(false); // 전역 상태 즉시 초기화
-      showWarning("등록하시려면 로그인해주세요", "로그인이 필요합니다", [
-        {
-          label: "취소",
-          variant: "secondary",
-          onClick: () => {
-            hideModal();
-          },
-        },
-        {
-          label: "로그인하기",
-          variant: "primary",
-          onClick: () => {
-            hideModal();
-            navigate("/login");
-          },
-        },
-      ]);
+      setShowLoginModal(false);
+      requireLogin("등록하시려면 로그인해주세요");
     }
-  }, [showLoginModal, showWarning, setShowLoginModal, hideModal, navigate]);
+  }, [showLoginModal, setShowLoginModal, requireLogin]);
 
   // 미리보기 URL
   const [ingNutriPreviews, setIngNutriPreviews] = useState<(string | null)[]>([null, null]);

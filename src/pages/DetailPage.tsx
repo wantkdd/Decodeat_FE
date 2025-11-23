@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Heart } from "lucide-react";
 import { getProductDetail } from "../apis/productDetail";
@@ -9,20 +9,17 @@ import DetailedNutrients from "../components/detail/DetailedNutrients";
 import RecommendedProducts from "../components/detail/RecommendedProducts";
 import { useImageReport } from "../hooks/useReport";
 import { useMessageModal } from "../hooks/useMessageModal";
-import { useAuthStore } from "../store/useAuthStore";
+import { useLoginRequired } from "../hooks/useLoginRequired";
 import { useLikeMutation } from "../hooks/useLike";
 import MessageModal from "../components/ui/MessageModal";
 import warnIcon from "../assets/icon/warn.svg";
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showLikeLoginModal, setShowLikeLoginModal] = useState(false);
 
-  // 인증 상태 확인
-  const { isAuthenticated } = useAuthStore();
+  // 로그인 체크 훅
+  const { requireLogin, isAuthenticated } = useLoginRequired();
 
   // 이미지 신고 훅
   const imageReportMutation = useImageReport();
@@ -76,8 +73,7 @@ const ProductDetailPage = () => {
     if (!product) return;
 
     // 로그인 확인
-    if (!isAuthenticated) {
-      setShowLoginModal(true);
+    if (!requireLogin("신고 기능을 이용하시려면 로그인해 주세요.")) {
       return;
     }
 
@@ -226,8 +222,7 @@ const ProductDetailPage = () => {
             <div className="flex justify-start mb-4">
               <button
                 onClick={() => {
-                  if (!isAuthenticated) {
-                    setShowLikeLoginModal(true);
+                  if (!requireLogin("좋아요 기능을 이용하시려면 로그인해 주세요.")) {
                     return;
                   }
                   likeMutation.mutate();
@@ -248,7 +243,7 @@ const ProductDetailPage = () => {
             <NutritionChart
               product={product}
               isAuthenticated={isAuthenticated}
-              onLoginRequired={() => setShowLoginModal(true)}
+              onLoginRequired={() => requireLogin("영양정보 비교 기능을 이용하시려면 로그인해 주세요.")}
             />
           </div>
         </div>
@@ -269,54 +264,6 @@ const ProductDetailPage = () => {
         type={modalState.type}
         buttons={modalState.buttons}
         icon={modalState.icon}
-      />
-
-      {/* 로그인 모달 */}
-      <MessageModal
-        isOpen={showLoginModal}
-        type="warning"
-        title="로그인이 필요합니다"
-        message="신고 기능을 이용하시려면 로그인해 주세요."
-        buttons={[
-          {
-            label: "취소",
-            variant: "secondary",
-            onClick: () => setShowLoginModal(false),
-          },
-          {
-            label: "로그인하기",
-            variant: "primary",
-            onClick: () => {
-              setShowLoginModal(false);
-              navigate("/login");
-            },
-          },
-        ]}
-        onClose={() => setShowLoginModal(false)}
-      />
-
-      {/* 좋아요 로그인 모달 */}
-      <MessageModal
-        isOpen={showLikeLoginModal}
-        type="warning"
-        title="로그인이 필요합니다"
-        message="좋아요 기능을 이용하시려면 로그인해 주세요."
-        buttons={[
-          {
-            label: "취소",
-            variant: "secondary",
-            onClick: () => setShowLikeLoginModal(false),
-          },
-          {
-            label: "로그인하기",
-            variant: "primary",
-            onClick: () => {
-              setShowLikeLoginModal(false);
-              navigate("/login");
-            },
-          },
-        ]}
-        onClose={() => setShowLikeLoginModal(false)}
       />
     </div>
   );
