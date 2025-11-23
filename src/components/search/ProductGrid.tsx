@@ -1,14 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import { ShoppingCart, Heart } from "lucide-react";
 import { useLatestProductsList } from "../../hooks/useProductList";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, memo } from "react";
 import ProductGridSkeleton from "./ProductGridSkeleton";
 import Skeleton from "../ui/Skeleton";
 import { useLikeMutation } from "../../hooks/useLike";
 import type { LatestProduct } from "../../types/productList";
 
-// 개별 제품 카드 컴포넌트
-const ProductCard = ({
+/**
+ * 개별 제품 카드 컴포넌트 (React.memo로 최적화)
+ *
+ * 불필요한 리렌더링을 방지하여 성능을 개선합니다.
+ */
+const ProductCard = memo(({
   product,
   displayImage,
   onProductClick,
@@ -69,17 +73,22 @@ const ProductCard = ({
       </div>
     </div>
   );
-};
+});
+
+ProductCard.displayName = "ProductCard";
 
 const ProductGrid = () => {
   const navigate = useNavigate();
   const { products, isLoading, error, hasNextPage, fetchNextPage, isEmpty, isFetchingNextPage } =
     useLatestProductsList();
 
-  // 제품 클릭 핸들러
-  const handleProductClick = (productId: number) => {
-    navigate(`/detail/${productId}`);
-  };
+  // 제품 클릭 핸들러 (useCallback으로 메모이제이션)
+  const handleProductClick = useCallback(
+    (productId: number) => {
+      navigate(`/detail/${productId}`);
+    },
+    [navigate]
+  );
 
   // 무한 스크롤 처리
   const handleScroll = useCallback(() => {
